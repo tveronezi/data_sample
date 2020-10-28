@@ -22,7 +22,7 @@ mod api {
     async fn github_authorize_url(config: web::Data<AppData>) -> impl Responder {
         let name = config.dude.clone();
         HttpResponse::Ok().json(GetPayload {
-            message: format!("Hi ${}", name),
+            message: format!("Hi {}", name),
         })
     }
 
@@ -34,16 +34,17 @@ mod api {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     use actix_web::middleware::Logger;
+    use actix_web::web;
     use app_data::AppData;
     use std::sync::Arc;
 
-    let data = Arc::new(AppData {
+    let data = web::Data::from(Arc::new(AppData {
         dude: "Dude".to_string(),
-    });
+    }));
     actix_web::HttpServer::new(move || {
         actix_web::App::new()
             .wrap(Logger::default())
-            .data(data.clone())
+            .app_data(data.clone())
             .service(api::scope())
     })
     .bind("0.0.0.0:7070")?
